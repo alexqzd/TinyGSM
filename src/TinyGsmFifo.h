@@ -9,6 +9,22 @@ public:
     {
         clear();
     }
+    
+     T peek() {        
+        int r = _r;
+        if (r == _w) {// !readable()
+            _r = _inc(r);
+            int f;
+            for (;;) // wait for data
+            {
+                f = size();
+                if (f)  break;        // free space
+                /* nothing / just wait */;
+            }
+            return peek();
+            };
+        return _b[r];
+    }
 
     void clear()
     {
