@@ -237,9 +237,37 @@ class TinyGsmTCP {
       return -1;
     }
 
-    // TODO(SRGDamia1): Implement peek
+        // TODO: Implement peek for other buffer configurations
     int peek() override {
-      return -1;
+#if defined(TINY_GSM_BUFFER_READ_AND_CHECK_SIZE)
+      TINY_GSM_YIELD();
+      size_t cnt = 0;
+      size_t size = 1;
+      at->maintain();
+      while (cnt < size) {
+        size_t chunk = TinyGsmMin(size - cnt, rx.size());
+      if (chunk > 0) {
+        return rx.peek();
+        continue;
+      }
+      // Workaround: Some modules "forget" to notify about data arrival
+      if (millis() - prev_check > 500) {
+        got_data   = true;
+        prev_check = millis();
+      }
+      // TODO(vshymanskyy): Read directly into user buffer?
+      at->maintain();
+      if (sock_available > 0) {
+        int n = at->modemRead(TinyGsmMin((uint16_t)rx.free(), sock_available), mux);
+        if (n == 0) break;
+      } else {
+        break;
+      }
+    }
+    return 0xFF;
+#else
+    return -1;
+#endif
     }
 
     void flush() override {
