@@ -264,7 +264,7 @@ class TinyGsmTCP {
         break;
       }
     }
-    return 0xFF;
+    return -1;
 #else
     return -1;
 #endif
